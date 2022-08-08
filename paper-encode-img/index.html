@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>encode img</title>
+  <script type="text/javascript" src="./decode-bmp.js"></script>
+</head>
+
+<body>
+    <section style="display: flex; column-gap: 100px;">
+        <div>
+            <img src="./images/test.bmp" />
+          </div>
+          <div>
+            <canvas id="canvas"></canvas>
+          </div>
+    </section>
+    <script type="text/javascript">
+        window.onload = function() {
+            fetch('./images/test.bmp')
+                .then(function(response) {
+                    response.arrayBuffer()
+                        .then(function(buffer) {
+                            const data = decode(buffer);
+                            drawCanvas(data);
+                        });
+                });
+        }
+
+        function drawCanvas({ width, height, rows }) {
+            const canvas = document.getElementById('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.createImageData(width, height);
+
+            let j = rows.length - 1;
+            let k = 0;
+            for (let i = 0; i < imageData.data.length; i += 4) {
+              imageData.data[i + 0] = rows[j][k + 2];  // R value
+              imageData.data[i + 1] = rows[j][k + 1];    // G value
+              imageData.data[i + 2] = rows[j][k + 0];  // B value
+              imageData.data[i + 3] = 255;  // A value
+              
+              k += 3;
+              if (k === rows[j].length) {
+                j--;
+                k = 0;
+              }
+
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+        }
+    </script>
+</body>
+
+</html>
